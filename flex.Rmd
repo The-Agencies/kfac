@@ -1,0 +1,217 @@
+---
+title: "K-factor Brushing"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    #social: menu
+    #source_code: embed
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+library(flexdashboard)
+library(datasets)
+library(readr)
+mtcars2 <- read_rds("DATA/k1.rds")
+mtcars2<-mtcars2[,c("Type","N","0.750","0.900","0.950","0.975","0.990","0.999","0.9999")]
+mtcars3 <- read_rds("DATA/k2.rds")
+mtcars3<-mtcars3[,c("Type","N","0.750","0.900","0.950","0.975","0.990","0.995","0.999")]
+```
+
+
+
+1 sided k-factors
+=======================================================================
+
+
+```{r}
+# Reactive that returns the whole dataset if there is no brush
+selectedData1 <- reactive({
+  data <- brushedPoints(mtcars2, input$plot1_brush)
+  if (nrow(data) == 0)
+    data <- mtcars2
+  data
+})
+```
+
+
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Select the  sample size you want
+to display the k-factors for:
+
+```{r}
+#nk1_fac
+selectInput("nk1_fac", label = "Sample Size:",
+            choices = c(1:1604), selected = 60)
+```
+
+Select the  Probability Content you want
+to display the k-factors for:
+
+```{r}
+#pc_1
+mtcars2_temp <- mtcars2[,-c(1,2)]
+varSelectInput("pc_1", "Probability Content:", mtcars2_temp)
+
+```
+
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### 1-sided k-factors {data-width=350}
+
+```{r}
+library(ggplot2)
+plotOutput("plot1", brush = brushOpts(id = "plot1_brush"))
+output$plot1 <- renderPlot({
+  ggplot(mtcars2, aes(N,!!input$pc_1, color=Type)) + geom_point() +geom_line()
+})
+```
+
+
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+
+### 1-sided k-factors {data-width=550}
+
+```{r}
+renderTable({
+  selectedData1()
+}, digits = 3)
+```
+
+
+### selected 1-sided k-factor {data-width=550}
+
+```{r}
+renderTable({
+  #selectedData()
+  n = as.numeric(input$nk1_fac)-1
+  mtcars2[n,]
+  #head(mtcars2, n = as.numeric(input$nk1_fac))
+}, digits = 3)
+```
+
+
+2-sided k-factor
+=======================================================================
+
+
+```{r}
+# Reactive that returns the whole dataset if there is no brush
+selectedData2 <- reactive({
+  data <- brushedPoints(mtcars3, input$plot3_brush)
+  if (nrow(data) == 0)
+    data <- mtcars3
+  data
+})
+```
+
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Select the  sample size you want
+to display the k-factors for:
+
+```{r}
+#n_breaks formed to nk_fac
+selectInput("nk2_fac", label = "Sample Size:",
+            choices = c(1:1600), selected = 60)
+
+```
+
+
+Select the  Probability Content you want
+to display the k-factors for:
+
+```{r}
+#pc_2
+mtcars3_temp <- mtcars3[,-c(1,2)]
+varSelectInput("pc_2", "Probability Content:", mtcars3_temp)
+
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### 2-sided k-factors  {data-width=350}
+
+```{r}
+library(ggplot2)
+plotOutput("plot3", brush = brushOpts(id = "plot3_brush"))
+output$plot3 <- renderPlot({
+  ggplot(mtcars3, aes(N,!!input$pc_2, color=Type)) + geom_point() +geom_line()
+})
+```
+
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+
+### 2-sided k-factors {data-width=550}
+
+```{r}
+renderTable({
+  selectedData2()
+}, digits = 3)
+```
+
+
+### selected 2-sided k-factor {data-width=550}
+
+```{r}
+renderTable({
+  #selectedData()
+  n= as.numeric(input$nk2_fac)-1
+  mtcars3[n,]
+  #head(mtcars3, n= as.numeric(input$nk2_fac))
+}, digits = 3)
+```
+
+
+About k-factor Brushing
+=======================================================================
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+### Kfactors{data-width=600}
+
+Application author: [Dr. Patric Stracke](https://sites.google.com/view/strackenet), [The Agency](https://sites.google.com/view/strackenet)
+
+This app allows for browsing k-factors in  accordance with ISO 11601-1.
+
+
+Statistical tolerance intervals are often used during design verification or process validation in
+diverse applications, such as the manufacturing of medical devices, the construction of nuclear reactors, 
+and the development of protective armor for the military. A statistical tolerance interval is an estimated 
+interval, based on a sample, which can be asserted with confidence level 1 - $\alpha$, for example 0.95, to 
+contain at least a specified proportion p of the items in the population. 
+The limits of a statistical tolerance  interval are called statistical tolerance limits. 
+The confidence level 1-α is the probability that a statistical 
+tolerance interval constructed in the prescribed manner will contain at least a proportion p of the population. 
+In ISO 16269 [2] tabled values of the so calld k-factor is presented in tables for a variety of settings.
+
+The k-factor determines the limits of one-or two-sided intervals and depends on n, the sample size, 1 - $\alpha$ and p, 
+the probability content. The ISO states that these tables are the exact k-factors. The values found in the 
+tables are rounded to 4 digits.
+
+In ISO 11608 [1] there is a reference to k-factor tables in the annexes D and E 
+of ISO 16269 andthere are 2 k-factor tables in annex B. In contrast to ISO 16269 the rounding in ISO 11608 is 
+only up to 3 digits.
+                        
+[1] ISO 11608-1:Needle-based injection systems for medical use - Requirements and test methods.Part 1: 
+Needle-based injection systems, 2014(E)
+
+[2] ISO 16269-6:Statistical Interpretation of data - Part 6: Determination of statistical tolerance intervals, 2014(E)
+
+Column {data-width=600}
+-----------------------------------------------------------------------
