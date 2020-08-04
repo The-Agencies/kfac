@@ -185,7 +185,7 @@ Column {data-width=600}
 -----------------------------------------------------------------------
 ### Kfactors{data-width=600}
 
-Application author: [Dr. Patric Stracke](https://sites.google.com/view/strackenet), [The Agency](https://sites.google.com/view/strackenet)
+Application author: [Dr. Patric Stracke](https://sites.google.com/view/strackenet), [The Agency](https://github.com/The-Agencies/kfac)
 
 This app allows for browsing k-factors in  accordance with ISO 11601-1.
 
